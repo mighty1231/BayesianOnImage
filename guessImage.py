@@ -25,7 +25,7 @@ def hashmethod_example(image):
             ret = concatenate((ret, rgb))
     return ret
 
-def main(imagePath, hashmethod = hashmethod_example, num_rect = 30):
+def main(imagePath, hashmethod = hashmethod_example, num_rect = 1):
     image = Image.open(imagePath)
     hashobj = hashmethod(image)
 
@@ -55,7 +55,8 @@ def main(imagePath, hashmethod = hashmethod_example, num_rect = 30):
         # Data likelihood
         hashobj_obs = pm.Poisson('objective', hashval, observed=hashobj)
 
-        step = pm.Metropolis([xpositions, ypositions, colors])
+        step = pm.Metropolis([xpositions, ypositions])
+        step2 = pm.Metropolis([colors])
 
         # # Initial values for stochastic nodes
         start = {
@@ -64,10 +65,10 @@ def main(imagePath, hashmethod = hashmethod_example, num_rect = 30):
             'colors': [random.randrange(256) for _ in range(3*num_rect)]
         }
 
-        tr = pm.sample(200, tune=100, start=start, step=[step], cores=1)
+        tr = pm.sample(200, tune=100, start=start, step=[step, step2], cores=2)
         pm.traceplot(tr)
 
     import matplotlib.pyplot as plt
     plt.show()
 
-main("starrynight.jpg")
+main("sample1.png")
